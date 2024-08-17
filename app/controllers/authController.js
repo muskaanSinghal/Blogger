@@ -30,7 +30,7 @@ exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    next(new AppError("Error and password are required.", 401));
+    next(new AppError("Email and password are required.", 401));
     return;
   }
 

@@ -35,4 +35,15 @@ exports.getAllTags = catchAsync(async (req, res, next) => {
   });
 });
 
-
+exports.getTag = catchAsync(async (req, res, next) => {
+  const tagId = req.params.id;
+  const tag = await Tag.findById(tagId);
+  const blogCount = await tag.getTaggedBlogs();
+  res.json({
+    status: "success",
+    data: {
+      tag,
+      tagged_blogs: blogCount,
+    },
+  });
+});

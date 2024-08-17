@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Blog = require("./BlogModel");
 
 const Schema = new mongoose.Schema({
   // name
@@ -8,12 +9,20 @@ const Schema = new mongoose.Schema({
     required: true,
   },
   // how many blogs have been tagged with this tag
-  tagged_blogs: {
-    type: Number,
-    default:0
-  },
+  // tagged_blogs: {
+  //   type: Number,
+  //   default: 0,
+  // },
   // followers
 });
+
+Schema.methods.getTaggedBlogs = async function () {
+  const tagId = this._id;
+  const taggedblogs = await Blog.countDocuments({
+    tags: { $elemMatch: { $eq: tagId } },
+  });
+  return taggedblogs;
+};
 
 const Tag = mongoose.model("Tag", Schema);
 
