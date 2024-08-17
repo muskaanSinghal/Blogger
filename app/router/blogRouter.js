@@ -1,0 +1,22 @@
+const express = require("express");
+const blogController = require("./../controllers/blogController");
+const authController = require("./../controllers/authController");
+
+const Router = express.Router();
+
+Router.get("/", blogController.getBlogs);
+Router.get("/:id", blogController.getBlog);
+
+//open for all logged in users
+Router.route("/").post(authController.protect, blogController.createBlog);
+
+//   valid for only logged in user and author
+Router.use("/:id", authController.protect, blogController.checkAuthor);
+
+Router.route("/:id")
+  .patch(blogController.updateBlog)
+  .delete(blogController.deleteBlog);
+
+Router.post("/:id/publish-blog", blogController.publishBlog);
+
+module.exports = Router;
