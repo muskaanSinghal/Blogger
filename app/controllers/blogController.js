@@ -1,5 +1,6 @@
 const catchAsync = require("./catchAsync");
 const Blog = require("./../model/BlogModel");
+const BlogLike = require("./../model/BlogLikeModel");
 const ApiFeatures = require("./../utils/ApiFeatures");
 const AppError = require("./../utils/AppError");
 
@@ -39,7 +40,18 @@ exports.getBlogs = catchAsync(async (req, res, next) => {
 
 exports.getBlog = catchAsync(async (req, res, next) => {
   const blog = await Blog.findById(req.params.id);
-  res.status(200).json({ status: "success", data: { blog } });
+  // check if user is logged in
+  let like = 0;
+  if (req?.user?._id) {
+    const blogLike = await BlogLike.findOne({ user: req.user._id, blog });
+    if (blogLike) {
+      like = blogLike.like;
+    }
+  }
+
+  res
+    .status(200)
+    .json({ status: "success", data: { blog, liked_by_me: like } });
 });
 
 exports.createBlog = catchAsync(async (req, res, next) => {
@@ -88,6 +100,7 @@ exports.publishBlog = catchAsync(async (req, res, next) => {
   });
 });
 
+//current logged in user is the author of blog or not
 exports.checkAuthor = catchAsync(async (req, res, next) => {
   const currentBlog = await Blog.findById(req.params.id);
   if (!currentBlog) {
@@ -106,4 +119,44 @@ exports.checkAuthor = catchAsync(async (req, res, next) => {
   }
 
   next();
+});
+
+exports.reviewBlog = catchAsync(async (req, res, next) => {
+  const blogId = req.params.id;
+  const { like } = req.body;
+
+  const blog = await Blog.findById(blogId);
+  //checking if blog exists or not
+  if (!blog) {
+    next(new AppError("Blog with this id does not exist", 404));
+    return;
+  } else {
+    // checking if author is the logged in user
+    if (blog.author.toString() === req.user._id.toString()) {
+      next(new AppError("You are not authorized to perform this action", 403));
+      return;
+    }
+  }
+
+  const result = await BlogLike.findOneAndUpdate(
+    {
+      user: req.user._id,
+      blog: blogId,
+    },
+    {
+      like,
+    },
+    {
+      upsert: true,
+      runValidators: true,
+    }
+  );
+  // updating blog likes after reviewing
+  blog.likes += result.like;
+  await blog.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Blog like status updated successfully!",
+  });
 });

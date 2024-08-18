@@ -19,7 +19,8 @@ const Schema = new mongoose.Schema({
 Schema.methods.getTaggedBlogs = async function () {
   const tagId = this._id;
   const taggedblogs = await Blog.countDocuments({
-    tags: { $elemMatch: { $eq: tagId } },
+    // tags: { $elemMatch: { $eq: tagId } },
+    tags: tagId,
   });
   return taggedblogs;
 };

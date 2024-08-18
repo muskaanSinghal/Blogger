@@ -55,6 +55,10 @@ const Schema = new mongoose.Schema({
     validate: tagValidator,
   },
   // likes
+  likes: {
+    type: Number,
+    default: 0,
+  },
   // comments
   // followers
   // shortlist

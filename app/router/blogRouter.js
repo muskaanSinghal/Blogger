@@ -9,6 +9,7 @@ Router.get("/:id", blogController.getBlog);
 
 //open for all logged in users
 Router.route("/").post(authController.protect, blogController.createBlog);
+Router.post("/:id/like", authController.protect, blogController.reviewBlog);
 
 //   valid for only logged in user and author
 Router.use("/:id", authController.protect, blogController.checkAuthor);
