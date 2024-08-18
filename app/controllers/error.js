@@ -1,5 +1,5 @@
 const errorController = (err, req, res, next) => {
-  console.log(err.message, "from error controller");
+  console.log(err.message, err.stack, "from error controller");
   const { statusCode = 500, message, status = "error" } = err;
   res.status(statusCode).json({
     status,
